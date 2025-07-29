@@ -1,13 +1,13 @@
-# MyApp - Flask Web Application với Tích hợp MoMo
+# MyApp - Flask Web Application với Tích hợp PayOS
 
-Ứng dụng web Flask với xác thực người dùng, xác minh email, tích hợp thanh toán MoMo và tải xuống file.
+Ứng dụng web Flask với xác thực người dùng, xác minh email, tích hợp thanh toán PayOS và tải xuống file.
 
 ## Tính năng
 
 - ✅ **Đăng ký/Đăng nhập người dùng** với xác thực email
 - ✅ **Xác minh email** tự động gửi link xác thực
 - ✅ **Quên mật khẩu** với email reset
-- ✅ **Tích hợp thanh toán MoMo** cho thị trường Việt Nam
+- ✅ **Tích hợp thanh toán PayOS** cho thị trường Việt Nam
 - ✅ **Tải xuống file bảo mật** chỉ cho người dùng đã thanh toán
 - ✅ **Giao diện Bootstrap** responsive và đẹp mắt
 - ✅ **Dashboard quản lý** trạng thái người dùng
@@ -23,7 +23,7 @@ web/
 │   ├── routes/
 │   │   ├── auth.py             # Authentication routes
 │   │   ├── main.py             # Main routes
-│   │   └── payment.py          # MoMo payment routes
+│   │   └── payment.py          # PayOS payment routes
 │   ├── templates/
 │   │   ├── base.html           # Base template
 │   │   ├── index.html          # Homepage
@@ -326,7 +326,33 @@ npm install -g ngrok
 # Expose local server
 ngrok http 5000
 
-# Update MOMO webhook URL to ngrok URL
+# Update PayOS webhook URL to ngrok URL
+```
+
+## Deployment
+
+### PythonAnywhere Deployment
+
+Xem hướng dẫn chi tiết trong [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+
+### Các bước cơ bản:
+
+1. **Upload code lên PythonAnywhere**
+2. **Cấu hình virtual environment**
+3. **Setup MySQL database**
+4. **Cấu hình Web App WSGI**
+5. **Update environment variables**
+6. **Cấu hình PayOS URLs**
+
+### PayOS Configuration
+
+Xem hướng dẫn chi tiết trong [PAYOS_CONFIGURATION.md](PAYOS_CONFIGURATION.md)
+
+### URLs cho Production:
+
+```env
+PAYOS_RETURN_URL=https://yourdomain.pythonanywhere.com/payment/return
+PAYOS_CANCEL_URL=https://yourdomain.pythonanywhere.com/main/dashboard
 ```
 
 ## Troubleshooting
@@ -344,17 +370,33 @@ python -c "from app import create_app, db; app = create_app(); app.app_context()
 - Verify SMTP settings
 - Check firewall/antivirus
 
-### MoMo Issues
+### PayOS Issues
 
 - Verify signature generation
-- Check webhook URL accessibility
-- Validate test credentials
+- Check webhook URL accessibility (HTTPS required)
+- Validate API credentials
+- Ensure description <= 25 characters
+
+### Production Issues
+
+- Check error logs: `/var/log/yourdomain.pythonanywhere.com.error.log`
+- Verify environment variables
+- Test database connection
+- Check static files configuration
+
+## Files và Documentation
+
+- `DEPLOYMENT_GUIDE.md` - Hướng dẫn deploy lên PythonAnywhere
+- `PAYOS_CONFIGURATION.md` - Hướng dẫn cấu hình PayOS
+- `HTTPS_SETUP.md` - Hướng dẫn setup HTTPS tunnel cho development
+- `.env.example` - Template cho environment variables
 
 ## Support
 
 - Email: support@myapp.com
 - Documentation: [Wiki](link-to-wiki)
 - Issues: [GitHub Issues](link-to-issues)
+- PayOS Support: support@payos.vn
 
 ## License
 

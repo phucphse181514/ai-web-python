@@ -13,11 +13,19 @@ import os
 payment_bp = Blueprint('payment', __name__, url_prefix='/payment')
 
 def create_payos_signature(data, checksum_key):
-    """Create PayOS signature"""
-    # Sort data keys and create string
-    sorted_data = sorted(data.items())
-    data_str = '&'.join([f'{k}={v}' for k, v in sorted_data])
-    return hmac.new(checksum_key.encode(), data_str.encode(), hashlib.sha256).hexdigest()
+    """Create PayOS signature theo format chính thức"""
+    # Tạo chuỗi data để ký theo thứ tự alphabet
+    sorted_keys = sorted(data.keys())
+    query_string = '&'.join([f"{key}={data[key]}" for key in sorted_keys])
+    
+    # Tạo signature bằng HMAC SHA256
+    signature = hmac.new(
+        checksum_key.encode('utf-8'),
+        query_string.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    
+    return signature
 
 @payment_bp.route('/checkout')
 @login_required
@@ -37,41 +45,70 @@ def checkout():
 @login_required
 def create_payment():
     """Create PayOS payment"""
+    current_app.logger.info(f'=== CREATE PAYMENT START ===')
+    current_app.logger.info(f'User: {current_user.email}')
+    current_app.logger.info(f'User verified: {current_user.is_verified}')
+    current_app.logger.info(f'User paid: {current_user.has_paid}')
+    
     if not current_user.is_verified:
+        current_app.logger.error('User not verified')
         flash('Bạn cần xác thực email trước khi thanh toán', 'error')
         return redirect(url_for('main.dashboard'))
     
     if current_user.has_paid:
+        current_app.logger.error('User already paid')
         flash('Bạn đã thanh toán rồi', 'info')
         return redirect(url_for('main.dashboard'))
     
     try:
+        current_app.logger.info('Getting PayOS configuration...')
         # PayOS configuration
         client_id = current_app.config.get('PAYOS_CLIENT_ID')
         api_key = current_app.config.get('PAYOS_API_KEY')
         checksum_key = current_app.config.get('PAYOS_CHECKSUM_KEY')
         
+        current_app.logger.info(f'Client ID: {client_id}')
+        current_app.logger.info(f'API Key: {api_key[:10] if api_key else "None"}...')
+        current_app.logger.info(f'Checksum Key: {checksum_key[:10] if checksum_key else "None"}...')
+        
         if not all([client_id, api_key, checksum_key]):
+            current_app.logger.error('PayOS configuration incomplete')
             flash('Cấu hình PayOS không đầy đủ', 'error')
             return redirect(url_for('payment.checkout'))
         
+        current_app.logger.info('Creating payment data...')
         # Payment details
         amount = current_app.config.get('PAYMENT_AMOUNT', 50000)  # 50,000 VND
         order_code = int(f"{current_user.id}{int(datetime.now().timestamp())}")
         
-        # PayOS payment data theo format mới
+        current_app.logger.info(f'Amount: {amount}')
+        current_app.logger.info(f'Order code: {order_code}')
+          # PayOS payment data theo API documentation có signature
+        signature_data = {
+            "amount": amount,
+            "cancelUrl": current_app.config.get('PAYOS_CANCEL_URL'),
+            "description": "MyApp Desktop",  # Giới hạn 25 ký tự cho PayOS
+            "orderCode": order_code,
+            "returnUrl": current_app.config.get('PAYOS_RETURN_URL')
+        }
+        
+        current_app.logger.info(f'Signature data: {signature_data}')
+        
+        # Tạo signature
+        signature = create_payos_signature(signature_data, checksum_key)
+        current_app.logger.info(f'Generated signature: {signature}')
+        
         payment_data = {
             "orderCode": order_code,
             "amount": amount,
-            "description": f"Thanh toan ung dung MyApp - User {current_user.email}",
+            "description": "MyApp Desktop",  # Giới hạn 25 ký tự cho PayOS
             "returnUrl": current_app.config.get('PAYOS_RETURN_URL'),
             "cancelUrl": current_app.config.get('PAYOS_CANCEL_URL'),
-            "expiredAt": int((datetime.now().timestamp() + 3600) * 1000)  # 1 hour from now in milliseconds
+            "signature": signature
         }
         
         # Debug: In ra thông tin trước khi gọi API
-        current_app.logger.info(f'PayOS Config: client_id={client_id}, api_key={api_key[:10]}...')
-        current_app.logger.info(f'Payment data: {payment_data}')
+        current_app.logger.info(f'PayOS payment data: {json.dumps(payment_data, indent=2)}')
         
         # Make request to PayOS API
         headers = {
@@ -80,7 +117,9 @@ def create_payment():
             'Content-Type': 'application/json'
         }
         
-        current_app.logger.info(f'Making request to PayOS API...')
+        current_app.logger.info(f'Headers: {headers}')
+        current_app.logger.info(f'Making request to PayOS API endpoint...')
+        
         response = requests.post(
             'https://api-merchant.payos.vn/v2/payment-requests',
             headers=headers,
@@ -96,6 +135,7 @@ def create_payment():
             current_app.logger.info(f'PayOS Result: {result}')
             
             if result.get('code') == '00' and result.get('data', {}).get('checkoutUrl'):
+                current_app.logger.info('PayOS success, creating payment record...')
                 # Create payment record in database
                 payment = Payment(
                     user_id=current_user.id,
@@ -106,25 +146,28 @@ def create_payment():
                 )
                 db.session.add(payment)
                 db.session.commit()
+                current_app.logger.info('Payment record created successfully')
                 
+                checkout_url = result['data']['checkoutUrl']
+                current_app.logger.info(f'Redirecting to checkout URL: {checkout_url}')
                 # Redirect to PayOS payment page
-                return redirect(result['data']['checkoutUrl'])
+                return redirect(checkout_url)
             else:
                 error_msg = result.get('desc', 'Unknown error')
+                current_app.logger.error(f'PayOS API returned error: {error_msg}')
                 flash(f'PayOS Error: {error_msg}', 'error')
-                current_app.logger.error(f'PayOS error: {result}')
         else:
+            current_app.logger.error(f'PayOS HTTP error: {response.status_code} - {response.text}')
             flash(f'Lỗi kết nối PayOS (Status: {response.status_code})', 'error')
-            current_app.logger.error(f'PayOS API error: {response.status_code} - {response.text}')
         
         return redirect(url_for('payment.checkout'))
             
     except requests.RequestException as e:
-        current_app.logger.error(f'PayOS request error: {str(e)}')
+        current_app.logger.error(f'PayOS request error: {str(e)}', exc_info=True)
         flash('Lỗi kết nối với PayOS. Vui lòng kiểm tra internet và thử lại.', 'error')
         return redirect(url_for('payment.checkout'))
     except Exception as e:
-        current_app.logger.error(f'PayOS payment creation error: {str(e)}')
+        current_app.logger.error(f'PayOS payment creation error: {str(e)}', exc_info=True)
         flash('Có lỗi xảy ra khi tạo thanh toán. Vui lòng thử lại.', 'error')
         return redirect(url_for('payment.checkout'))
 
@@ -132,6 +175,9 @@ def create_payment():
 def payment_return():
     """Handle PayOS payment return"""
     try:
+        current_app.logger.info('=== PAYMENT RETURN START ===')
+        current_app.logger.info(f'All request args: {dict(request.args)}')
+        
         # Get parameters from PayOS
         code = request.args.get('code')
         id = request.args.get('id')
@@ -139,13 +185,32 @@ def payment_return():
         status = request.args.get('status')
         orderCode = request.args.get('orderCode')
         
+        current_app.logger.info(f'PayOS return params:')
+        current_app.logger.info(f'  - code: {code}')
+        current_app.logger.info(f'  - id: {id}')
+        current_app.logger.info(f'  - cancel: {cancel}')
+        current_app.logger.info(f'  - status: {status}')
+        current_app.logger.info(f'  - orderCode: {orderCode}')
+        
+        if not orderCode:
+            current_app.logger.error('No orderCode found in return parameters')
+            flash('Thiếu thông tin mã đơn hàng', 'error')
+            return redirect(url_for('main.dashboard'))
+        
         # Find payment record
-        payment = Payment.query.filter_by(payos_order_id=orderCode).first()
+        payment = Payment.query.filter_by(payos_order_id=str(orderCode)).first()
+        current_app.logger.info(f'Payment found: {payment is not None}')
+        
         if not payment:
+            current_app.logger.error(f'Payment not found for orderCode: {orderCode}')
             flash('Không tìm thấy thông tin thanh toán', 'error')
             return redirect(url_for('main.dashboard'))
         
+        current_app.logger.info(f'Current payment status: {payment.status}')
+        current_app.logger.info(f'Payment user ID: {payment.user_id}')
+        
         if code == '00' and status == 'PAID':
+            current_app.logger.info('Processing successful payment...')
             # Payment successful
             payment.status = 'PAID'
             payment.payos_transaction_id = id
@@ -154,25 +219,30 @@ def payment_return():
             # Update user payment status
             user = payment.user
             user.has_paid = True
+            current_app.logger.info(f'Updated user {user.email} payment status to True')
             
             db.session.commit()
+            current_app.logger.info('Payment and user status updated successfully')
             
             flash('Thanh toán thành công! Bạn có thể tải ứng dụng ngay bây giờ.', 'success')
         elif cancel == 'true':
+            current_app.logger.info('Processing cancelled payment...')
             # Payment cancelled
             payment.status = 'CANCELLED'
             db.session.commit()
             flash('Thanh toán đã bị hủy', 'warning')
         else:
+            current_app.logger.info('Processing failed payment...')
             # Payment failed
             payment.status = 'FAILED'
             db.session.commit()
             flash('Thanh toán thất bại. Vui lòng thử lại.', 'error')
     
     except Exception as e:
-        current_app.logger.error(f'PayOS return error: {str(e)}')
+        current_app.logger.error(f'PayOS return error: {str(e)}', exc_info=True)
         flash('Có lỗi xảy ra khi xử lý kết quả thanh toán', 'error')
     
+    current_app.logger.info('Redirecting to dashboard...')
     return redirect(url_for('main.dashboard'))
 
 @payment_bp.route('/webhook', methods=['POST'])
@@ -231,3 +301,94 @@ def cancel_payment():
     """Cancel payment"""
     flash('Thanh toán đã bị hủy', 'info')
     return redirect(url_for('main.dashboard'))
+
+@payment_bp.route('/test-payment', methods=['POST'])
+@login_required  
+def test_payment():
+    """Test payment function đơn giản để debug"""
+    current_app.logger.info('=== TEST PAYMENT FUNCTION ===')
+    current_app.logger.info(f'User: {current_user.email}')
+    current_app.logger.info(f'User ID: {current_user.id}')
+    current_app.logger.info(f'Is verified: {current_user.is_verified}')
+    current_app.logger.info(f'Has paid: {current_user.has_paid}')
+    
+    try:
+        # Copy exact code từ test endpoint thành công
+        client_id = current_app.config.get('PAYOS_CLIENT_ID')
+        api_key = current_app.config.get('PAYOS_API_KEY')
+        checksum_key = current_app.config.get('PAYOS_CHECKSUM_KEY')
+        
+        current_app.logger.info(f'Config check - Client ID: {bool(client_id)}')
+        current_app.logger.info(f'Config check - API Key: {bool(api_key)}')
+        current_app.logger.info(f'Config check - Checksum Key: {bool(checksum_key)}')
+        
+        if not all([client_id, api_key, checksum_key]):
+            flash('PayOS configuration incomplete', 'error')
+            return redirect(url_for('payment.checkout'))
+        
+        # Payment details
+        amount = 50000
+        order_code = int(datetime.now().timestamp())
+        
+        current_app.logger.info(f'Payment details - Amount: {amount}, Order: {order_code}')
+          # PayOS payment data (copy từ test thành công)
+        signature_data = {
+            "amount": amount,
+            "cancelUrl": current_app.config.get('PAYOS_CANCEL_URL'),
+            "description": "Test payment",  # Giới hạn 25 ký tự
+            "orderCode": order_code,
+            "returnUrl": current_app.config.get('PAYOS_RETURN_URL')
+        }
+        
+        # Tạo signature
+        signature = create_payos_signature(signature_data, checksum_key)
+        current_app.logger.info(f'Generated signature: {signature}')
+        
+        payment_data = {
+            "orderCode": order_code,
+            "amount": amount,
+            "description": "Test payment",  # Giới hạn 25 ký tự
+            "returnUrl": current_app.config.get('PAYOS_RETURN_URL'),
+            "cancelUrl": current_app.config.get('PAYOS_CANCEL_URL'),
+            "signature": signature
+        }
+        
+        current_app.logger.info(f'Payment data: {json.dumps(payment_data, indent=2)}')
+        
+        # Make request to PayOS API
+        headers = {
+            'x-client-id': client_id,
+            'x-api-key': api_key,
+            'Content-Type': 'application/json'
+        }
+        
+        current_app.logger.info('Making PayOS request...')
+        response = requests.post(
+            'https://api-merchant.payos.vn/v2/payment-requests',
+            headers=headers,
+            json=payment_data,
+            timeout=30
+        )
+        
+        current_app.logger.info(f'PayOS response status: {response.status_code}')
+        current_app.logger.info(f'PayOS response: {response.text}')
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('code') == '00' and result.get('data', {}).get('checkoutUrl'):
+                current_app.logger.info(f'SUCCESS! Redirecting to: {result["data"]["checkoutUrl"]}')
+                return redirect(result['data']['checkoutUrl'])
+            else:
+                error_msg = result.get('desc', 'Unknown error')
+                current_app.logger.error(f'PayOS API error: {error_msg}')
+                flash(f'PayOS Error: {error_msg}', 'error')
+        else:
+            current_app.logger.error(f'HTTP error: {response.status_code}')
+            flash(f'HTTP Error: {response.status_code}', 'error')
+        
+        return redirect(url_for('payment.checkout'))
+        
+    except Exception as e:
+        current_app.logger.error(f'Exception in test payment: {str(e)}', exc_info=True)
+        flash(f'Exception: {str(e)}', 'error')
+        return redirect(url_for('payment.checkout'))
