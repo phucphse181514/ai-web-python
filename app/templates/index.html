@@ -1,0 +1,181 @@
+{% extends "base.html" %} {% block content %}
+<!-- Hero Section -->
+<section class="bg-primary text-white py-5">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-4">Ứng dụng Desktop Chuyên nghiệp</h1>
+        <p class="lead mb-4">
+          Trải nghiệm công cụ mạnh mẽ và hiệu quả cho công việc hàng ngày của
+          bạn. Đăng ký ngay để tải về và sử dụng ngay hôm nay!
+        </p>
+        {% if current_user.is_authenticated %} {% if current_user.can_download()
+        %}
+        <a
+          href="{{ url_for('main.download') }}"
+          class="btn btn-success btn-lg me-3"
+        >
+          <i class="fas fa-download me-2"></i>Tải về ngay
+        </a>
+        {% else %}
+        <a
+          href="{{ url_for('main.dashboard') }}"
+          class="btn btn-warning btn-lg me-3"
+        >
+          <i class="fas fa-tachometer-alt me-2"></i>Đến Dashboard
+        </a>
+        {% endif %} {% else %}
+        <a
+          href="{{ url_for('auth.register') }}"
+          class="btn btn-success btn-lg me-3"
+        >
+          <i class="fas fa-user-plus me-2"></i>Đăng ký miễn phí
+        </a>
+        <a
+          href="{{ url_for('auth.login') }}"
+          class="btn btn-outline-light btn-lg"
+        >
+          <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+        </a>
+        {% endif %}
+      </div>
+      <div class="col-lg-6">
+        <div class="text-center">
+          <i class="fas fa-desktop" style="font-size: 12rem; opacity: 0.3"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="row text-center mb-5">
+      <div class="col-12">
+        <h2 class="fw-bold">Tại sao chọn MyApp?</h2>
+        <p class="lead text-muted">
+          Những tính năng vượt trội giúp bạn làm việc hiệu quả hơn
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="fas fa-rocket text-primary" style="font-size: 3rem"></i>
+            </div>
+            <h5 class="card-title">Hiệu suất cao</h5>
+            <p class="card-text">
+              Được tối ưu hóa để chạy mượt mà trên mọi hệ thống Windows.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i
+                class="fas fa-shield-alt text-success"
+                style="font-size: 3rem"
+              ></i>
+            </div>
+            <h5 class="card-title">Bảo mật tuyệt đối</h5>
+            <p class="card-text">
+              Dữ liệu của bạn được bảo vệ với các tiêu chuẩn bảo mật cao nhất.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <i class="fas fa-headset text-info" style="font-size: 3rem"></i>
+            </div>
+            <h5 class="card-title">Hỗ trợ 24/7</h5>
+            <p class="card-text">
+              Đội ngũ hỗ trợ chuyên nghiệp luôn sẵn sàng giúp đỡ bạn.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Process Section -->
+<section class="bg-light py-5">
+  <div class="container">
+    <div class="row text-center mb-5">
+      <div class="col-12">
+        <h2 class="fw-bold">Quy trình đơn giản</h2>
+        <p class="lead text-muted">Chỉ 3 bước để bắt đầu sử dụng</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-lg-4 mb-4">
+        <div class="text-center">
+          <div
+            class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+            style="width: 80px; height: 80px"
+          >
+            <span class="fw-bold fs-2">1</span>
+          </div>
+          <h5>Đăng ký tài khoản</h5>
+          <p class="text-muted">
+            Tạo tài khoản miễn phí và xác thực email của bạn
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="text-center">
+          <div
+            class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+            style="width: 80px; height: 80px"
+          >
+            <span class="fw-bold fs-2">2</span>
+          </div>
+          <h5>Thanh toán</h5>
+          <p class="text-muted">
+            Thanh toán một lần với MoMo để mở khóa ứng dụng
+          </p>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="text-center">
+          <div
+            class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+            style="width: 80px; height: 80px"
+          >
+            <span class="fw-bold fs-2">3</span>
+          </div>
+          <h5>Tải về và sử dụng</h5>
+          <p class="text-muted">Tải về ứng dụng và bắt đầu trải nghiệm ngay</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="fw-bold mb-4">Sẵn sàng bắt đầu?</h2>
+        <p class="lead text-muted mb-4">
+          Hàng nghìn người dùng đã tin tưởng và sử dụng ứng dụng của chúng tôi
+        </p>
+        {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
+          <i class="fas fa-rocket me-2"></i>Bắt đầu ngay hôm nay
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

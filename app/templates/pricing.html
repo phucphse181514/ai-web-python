@@ -1,0 +1,87 @@
+{% extends "base.html" %} {% block title %}Giá cả - MyApp{% endblock %} {% block
+content %}
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="display-4 fw-bold">Giá cả hợp lý</h1>
+    <p class="lead text-muted">
+      Chỉ với một lần thanh toán, sở hữu ứng dụng vĩnh viễn
+    </p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card border-primary shadow-lg">
+        <div class="card-header bg-primary text-white text-center py-4">
+          <h3 class="fw-bold mb-0">Gói Standard</h3>
+        </div>
+        <div class="card-body text-center p-5">
+          <div class="price-highlight mb-4">50,000đ</div>
+          <p class="text-muted mb-4">Thanh toán một lần - Sử dụng vĩnh viễn</p>
+
+          <ul class="list-unstyled mb-4">
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>Tải về và cài đặt
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>Sử dụng không giới
+              hạn
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>Cập nhật miễn phí
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>Hỗ trợ kỹ thuật 24/7
+            </li>
+            <li class="mb-2">
+              <i class="fas fa-check text-success me-2"></i>Bảo mật dữ liệu
+            </li>
+          </ul>
+
+          {% if current_user.is_authenticated %} {% if current_user.has_paid %}
+          <a
+            href="{{ url_for('main.download') }}"
+            class="btn btn-success btn-lg"
+          >
+            <i class="fas fa-download me-2"></i>Tải về ngay
+          </a>
+          {% elif current_user.is_verified %}
+          <a
+            href="{{ url_for('payment.checkout') }}"
+            class="btn btn-primary btn-lg"
+          >
+            <i class="fas fa-credit-card me-2"></i>Thanh toán ngay
+          </a>
+          {% else %}
+          <a
+            href="{{ url_for('main.dashboard') }}"
+            class="btn btn-warning btn-lg"
+          >
+            <i class="fas fa-exclamation-triangle me-2"></i>Xác thực email
+          </a>
+          {% endif %} {% else %}
+          <a
+            href="{{ url_for('auth.register') }}"
+            class="btn btn-success btn-lg"
+          >
+            <i class="fas fa-rocket me-2"></i>Bắt đầu ngay
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-5">
+    <div class="col-12 text-center">
+      <h4 class="mb-4">Phương thức thanh toán</h4>
+      <div class="d-flex justify-content-center align-items-center gap-4">
+        <img
+          src="https://payos.vn/docs/img/logo.svg"
+          alt="PayOS"
+          style="height: 50px"
+        />
+        <span class="text-muted">Thanh toán an toàn với PayOS</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

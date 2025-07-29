@@ -1,0 +1,117 @@
+{% extends "base.html" %} {% block title %}Hỗ trợ - MyApp{% endblock %} {% block
+content %}
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="display-4 fw-bold">Hỗ trợ khách hàng</h1>
+    <p class="lead text-muted">Chúng tôi luôn sẵn sàng giúp đỡ bạn</p>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card shadow">
+        <div class="card-body p-5">
+          <h3 class="mb-4">Liên hệ với chúng tôi</h3>
+
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <div class="bg-primary text-white rounded-circle p-3 me-3">
+                  <i class="fas fa-envelope"></i>
+                </div>
+                <div>
+                  <h6 class="mb-0">Email</h6>
+                  <small class="text-muted">mahika-support@gmail.com</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex align-items-center mb-3">
+                <div class="bg-success text-white rounded-circle p-3 me-3">
+                  <i class="fas fa-phone"></i>
+                </div>
+                <div>
+                  <h6 class="mb-0">Hotline</h6>
+                  <small class="text-muted">1900-xxxx</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h5 class="mb-3">Câu hỏi thường gặp</h5>
+
+          <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button
+                  class="accordion-button"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#faq1"
+                >
+                  Làm sao để tải ứng dụng?
+                </button>
+              </h2>
+              <div
+                id="faq1"
+                class="accordion-collapse collapse show"
+                data-bs-parent="#faqAccordion"
+              >
+                <div class="accordion-body">
+                  Bạn cần đăng ký tài khoản, xác thực email, thanh toán và sau
+                  đó có thể tải ứng dụng từ Dashboard.
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#faq2"
+                >
+                  Không nhận được email xác thực?
+                </button>
+              </h2>
+              <div
+                id="faq2"
+                class="accordion-collapse collapse"
+                data-bs-parent="#faqAccordion"
+              >
+                <div class="accordion-body">
+                  Kiểm tra thư mục spam/junk. Nếu vẫn không có, bạn có thể gửi
+                  lại email xác thực từ Dashboard.
+                </div>
+              </div>
+            </div>
+
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button
+                  class="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#faq3"
+                >
+                  Thanh toán có an toàn không?
+                </button>
+              </h2>
+              <div
+                id="faq3"
+                class="accordion-collapse collapse"
+                data-bs-parent="#faqAccordion"
+              >
+                <div class="accordion-body">
+                  Có, chúng tôi sử dụng MoMo - một trong những ví điện tử uy tín
+                  nhất Việt Nam với mã hóa SSL.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

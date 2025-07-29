@@ -1,0 +1,10 @@
+# This is a demo file representing your desktop application
+# Replace this with your actual .exe file
+
+# MyApp v1.0
+# Demo Desktop Application
+
+print("This is a demo file. Replace with your actual application executable.")
+print("File size: Demo")
+print("Version: 1.0")
+print("Thank you for purchasing MyApp!")

@@ -1,0 +1,180 @@
+{% extends "base.html" %} {% block title %}Thanh toán - MyApp{% endblock %} {%
+block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-credit-card me-2"></i>Thanh toán với MoMo
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <!-- Product Info -->
+          <div class="row mb-4">
+            <div class="col-md-8">
+              <h5 class="fw-bold">MyApp - Ứng dụng Desktop</h5>
+              <p class="text-muted mb-2">Bản quyền sử dụng vĩnh viễn</p>
+              <ul class="list-unstyled">
+                <li>
+                  <i class="fas fa-check text-success me-2"></i>Tải về và sử
+                  dụng không giới hạn
+                </li>
+                <li>
+                  <i class="fas fa-check text-success me-2"></i>Cập nhật miễn
+                  phí
+                </li>
+                <li>
+                  <i class="fas fa-check text-success me-2"></i>Hỗ trợ kỹ thuật
+                </li>
+                <li>
+                  <i class="fas fa-check text-success me-2"></i>Bảo mật dữ liệu
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-4 text-end">
+              <div class="bg-light p-3 rounded">
+                <h6 class="text-muted mb-1">Giá</h6>
+                <h3 class="text-success fw-bold mb-0">50,000 VND</h3>
+                <small class="text-muted">Thanh toán một lần</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Method -->
+          <div class="mb-4">
+            <h6 class="fw-bold mb-3">Phương thức thanh toán</h6>
+            <div class="card border-2 border-primary">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <img
+                    src="https://payos.vn/docs/img/logo.svg"
+                    alt="PayOS"
+                    style="height: 40px"
+                    class="me-3"
+                  />
+                  <div>
+                    <h6 class="mb-1">PayOS</h6>
+                    <small class="text-muted"
+                      >Thanh toán nhanh chóng với QR Code hoặc Internet
+                      Banking</small
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Info -->
+          <div class="mb-4">
+            <h6 class="fw-bold mb-3">Thông tin khách hàng</h6>
+            <div class="bg-light p-3 rounded">
+              <p class="mb-1">
+                <strong>Email:</strong> {{ current_user.email }}
+              </p>
+              <p class="mb-0">
+                <strong>Trạng thái:</strong>
+                <span class="badge bg-success">Email đã xác thực</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Terms -->
+          <div class="mb-4">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="agree_terms"
+                required
+              />
+              <label class="form-check-label" for="agree_terms">
+                Tôi đồng ý với
+                <a href="{{ url_for('main.terms') }}" target="_blank"
+                  >Điều khoản sử dụng</a
+                >
+                và
+                <a href="{{ url_for('main.privacy') }}" target="_blank"
+                  >Chính sách bảo mật</a
+                >
+              </label>
+            </div>
+          </div>
+
+          <!-- Payment Summary -->
+          <div class="border-top pt-3 mb-4">
+            <div class="row">
+              <div class="col-6">
+                <h6 class="mb-0">Tổng cộng:</h6>
+              </div>
+              <div class="col-6 text-end">
+                <h5 class="text-success fw-bold mb-0">50,000 VND</h5>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a
+              href="{{ url_for('main.dashboard') }}"
+              class="btn btn-outline-secondary"
+            >
+              <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+            <form
+              method="POST"
+              action="{{ url_for('payment.create_payment') }}"
+              class="d-inline"
+            >
+              <button
+                type="submit"
+                class="btn btn-success btn-lg"
+                id="pay-button"
+                disabled
+              >
+                <i class="fas fa-credit-card me-2"></i>Thanh toán với PayOS
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Info -->
+      <div class="mt-4">
+        <div class="card border-0 bg-light">
+          <div class="card-body text-center">
+            <div class="row">
+              <div class="col-md-4">
+                <i class="fas fa-shield-alt text-success fs-3 mb-2"></i>
+                <h6>Bảo mật SSL</h6>
+                <small class="text-muted">Dữ liệu được mã hóa</small>
+              </div>
+              <div class="col-md-4">
+                <i class="fas fa-lock text-primary fs-3 mb-2"></i>
+                <h6>Thanh toán an toàn</h6>
+                <small class="text-muted">Được PayOS bảo vệ</small>
+              </div>
+              <div class="col-md-4">
+                <i class="fas fa-undo text-info fs-3 mb-2"></i>
+                <h6>Chính sách hoàn tiền</h6>
+                <small class="text-muted">Trong vòng 7 ngày</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const agreeTerms = document.getElementById("agree_terms");
+    const payButton = document.getElementById("pay-button");
+
+    agreeTerms.addEventListener("change", function () {
+      payButton.disabled = !this.checked;
+    });
+  });
+</script>
+{% endblock %}

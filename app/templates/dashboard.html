@@ -1,0 +1,233 @@
+{% extends "base.html" %} {% block title %}Dashboard - MyApp{% endblock %} {%
+block content %}
+<div class="container py-4">
+  <div class="row">
+    <div class="col-12">
+      <h1 class="mb-4"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+    </div>
+  </div>
+
+  <!-- User Status Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <h6 class="card-title text-muted mb-1">Trạng thái email</h6>
+              {% if current_user.is_verified %}
+              <h4 class="text-success mb-0">
+                <i class="fas fa-check-circle me-1"></i>Đã xác thực
+              </h4>
+              {% else %}
+              <h4 class="text-warning mb-0">
+                <i class="fas fa-exclamation-triangle me-1"></i>Chưa xác thực
+              </h4>
+              {% endif %}
+            </div>
+            <div class="fs-1 text-muted">
+              <i class="fas fa-envelope"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <h6 class="card-title text-muted mb-1">Trạng thái thanh toán</h6>
+              {% if current_user.has_paid %}
+              <h4 class="text-success mb-0">
+                <i class="fas fa-check-circle me-1"></i>Đã thanh toán
+              </h4>
+              {% else %}
+              <h4 class="text-danger mb-0">
+                <i class="fas fa-times-circle me-1"></i>Chưa thanh toán
+              </h4>
+              {% endif %}
+            </div>
+            <div class="fs-1 text-muted">
+              <i class="fas fa-credit-card"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <h6 class="card-title text-muted mb-1">Trạng thái tải về</h6>
+              {% if current_user.can_download() %}
+              <h4 class="text-success mb-0">
+                <i class="fas fa-check-circle me-1"></i>Có thể tải
+              </h4>
+              {% else %}
+              <h4 class="text-secondary mb-0">
+                <i class="fas fa-lock me-1"></i>Chưa sẵn sàng
+              </h4>
+              {% endif %}
+            </div>
+            <div class="fs-1 text-muted">
+              <i class="fas fa-download"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Cards -->
+  <div class="row">
+    <div class="col-lg-8">
+      {% if not current_user.is_verified %}
+      <div class="card border-warning mb-4">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>Cần xác thực email
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            Bạn cần xác thực email để có thể thanh toán và tải ứng dụng. Vui
+            lòng kiểm tra hộp thư email của bạn và nhấn vào liên kết xác thực.
+          </p>
+          <a
+            href="{{ url_for('auth.resend_verification') }}"
+            class="btn btn-warning"
+          >
+            <i class="fas fa-paper-plane me-2"></i>Gửi lại email xác thực
+          </a>
+        </div>
+      </div>
+      {% elif not current_user.has_paid %}
+      <div class="card border-info mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-credit-card me-2"></i>Sẵn sàng thanh toán
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            Email đã được xác thực thành công! Bây giờ bạn có thể tiến hành
+            thanh toán để mở khóa ứng dụng.
+          </p>
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h4 class="text-success mb-1">50,000 VND</h4>
+              <small class="text-muted">Thanh toán một lần</small>
+            </div>
+            <a href="{{ url_for('payment.checkout') }}" class="btn btn-success">
+              <i class="fas fa-credit-card me-2"></i>Thanh toán ngay
+            </a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="card border-success mb-4">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-check-circle me-2"></i>Sẵn sàng tải về
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="card-text">
+            Tuyệt vời! Bạn đã hoàn thành tất cả các bước. Bây giờ bạn có thể tải
+            về ứng dụng.
+          </p>
+          <a
+            href="{{ url_for('main.download') }}"
+            class="btn btn-success btn-lg"
+          >
+            <i class="fas fa-download me-2"></i>Tải về ứng dụng
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- User Info -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-user me-2"></i>Thông tin tài khoản
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Email:</strong> {{ current_user.email }}</p>
+              <p>
+                <strong>Ngày đăng ký:</strong> {{
+                current_user.created_at.strftime('%d/%m/%Y %H:%M') }}
+              </p>
+            </div>
+            <div class="col-md-6">
+              {% if current_user.verified_at %}
+              <p>
+                <strong>Ngày xác thực:</strong> {{
+                current_user.verified_at.strftime('%d/%m/%Y %H:%M') }}
+              </p>
+              {% endif %}
+              <p>
+                <strong>Trạng thái:</strong>
+                <span
+                  class="badge bg-{{ 'success' if current_user.can_download() else 'warning' }}"
+                >
+                  {{ 'Đã kích hoạt' if current_user.can_download() else 'Đang
+                  chờ' }}
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Thao tác nhanh</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            {% if current_user.can_download() %}
+            <a href="{{ url_for('main.download') }}" class="btn btn-success">
+              <i class="fas fa-download me-2"></i>Tải ứng dụng
+            </a>
+            {% endif %}
+
+            <a
+              href="{{ url_for('payment.payment_history') }}"
+              class="btn btn-outline-primary"
+            >
+              <i class="fas fa-history me-2"></i>Lịch sử thanh toán
+            </a>
+
+            <a
+              href="{{ url_for('main.support') }}"
+              class="btn btn-outline-info"
+            >
+              <i class="fas fa-headset me-2"></i>Hỗ trợ
+            </a>
+
+            <hr />
+
+            <a
+              href="{{ url_for('auth.logout') }}"
+              class="btn btn-outline-danger"
+            >
+              <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %} {% block title %}Lịch sử thanh toán - MyApp{% endblock
+%} {% block content %}
+<div class="container py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex align-items-center mb-4">
+        <h1 class="me-auto">
+          <i class="fas fa-history me-2"></i>Lịch sử thanh toán
+        </h1>
+        <a
+          href="{{ url_for('main.dashboard') }}"
+          class="btn btn-outline-primary"
+        >
+          <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% if payments %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>Mã đơn hàng</th>
+                  <th>Mã giao dịch</th>
+                  <th>Số tiền</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày tạo</th>
+                  <th>Ngày hoàn thành</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for payment in payments %}
+                <tr>
+                  <td>
+                    <small class="text-muted"
+                      >{{ payment.payos_order_id }}</small
+                    >
+                  </td>
+                  <td>
+                    {% if payment.payos_transaction_id %}
+                    <small class="text-muted"
+                      >{{ payment.payos_transaction_id }}</small
+                    >
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <strong
+                      >{{ "{:,.0f}".format(payment.amount) }} {{
+                      payment.currency }}</strong
+                    >
+                  </td>
+                  <td>
+                    {% if payment.status == 'PAID' %}
+                    <span class="badge bg-success">Thành công</span>
+                    {% elif payment.status == 'PENDING' %}
+                    <span class="badge bg-warning">Đang xử lý</span>
+                    {% elif payment.status == 'CANCELLED' %}
+                    <span class="badge bg-danger">Đã hủy</span>
+                    {% else %}
+                    <span class="badge bg-secondary"
+                      >{{ payment.status.title() }}</span
+                    >
+                    {% endif %}
+                  </td>
+                  <td>
+                    <small
+                      >{{ payment.created_at.strftime('%d/%m/%Y %H:%M')
+                      }}</small
+                    >
+                  </td>
+                  <td>
+                    {% if payment.completed_at %}
+                    <small
+                      >{{ payment.completed_at.strftime('%d/%m/%Y %H:%M')
+                      }}</small
+                    >
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  {% set successful_payments = payments|selectattr('status', 'equalto',
+  'PAID')|list %} {% if successful_payments %}
+  <div class="row mt-4">
+    <div class="col-lg-6">
+      <div class="card bg-light">
+        <div class="card-body">
+          <h6 class="card-title">Tổng kết</h6>
+          <p class="mb-1">
+            <strong>Số giao dịch thành công:</strong> {{
+            successful_payments|length }}
+          </p>
+          <p class="mb-0">
+            <strong>Tổng số tiền:</strong>
+            {{ "{:,.0f}".format(successful_payments|map(attribute='amount')|sum)
+            }} VND
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %} {% else %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body text-center py-5">
+          <div class="mb-4">
+            <i class="fas fa-receipt text-muted" style="font-size: 4rem"></i>
+          </div>
+          <h4 class="text-muted">Chưa có giao dịch nào</h4>
+          <p class="text-muted mb-4">
+            Bạn chưa thực hiện giao dịch thanh toán nào.
+          </p>
+          {% if not current_user.has_paid %}
+          <a href="{{ url_for('payment.checkout') }}" class="btn btn-primary">
+            <i class="fas fa-credit-card me-2"></i>Thanh toán ngay
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
