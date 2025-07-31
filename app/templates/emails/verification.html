@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Xác thực tài khoản MyApp</title>
+    <title>Xác thực tài khoản Mahika</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -44,18 +44,18 @@
   <body>
     <div class="container">
       <div class="header">
-        <h1>MyApp</h1>
+        <h1>Mahika</h1>
         <h2>Xác thực tài khoản</h2>
       </div>
-
       <div class="content">
         <h3>Xin chào!</h3>
         <p>
-          Cảm ơn bạn đã đăng ký tài khoản MyApp. Để hoàn tất quá trình đăng ký,
+          Cảm ơn bạn đã đăng ký tài khoản Mahika. Để hoàn tất quá trình đăng ký,
           vui lòng xác thực địa chỉ email của bạn.
         </p>
 
         <p><strong>Email đăng ký:</strong> {{ user.email }}</p>
+        <p><strong>Thời gian đăng ký:</strong> {{ current_time_vn }}</p>
 
         <p>Nhấn vào nút bên dưới để xác thực tài khoản:</p>
 
@@ -63,27 +63,20 @@
           <a href="{{ verification_url }}" class="button">Xác thực tài khoản</a>
         </div>
 
-        <p>Hoặc copy và paste liên kết sau vào trình duyệt:</p>
-        <p
-          style="
-            word-break: break-all;
-            background: #fff;
-            padding: 10px;
-            border: 1px solid #ddd;
-          "
-        >
-          {{ verification_url }}
+        <p>
+          <em
+            >Link xác thực này có hiệu lực trong vòng 1 giờ kể từ thời điểm
+            gửi.</em
+          >
         </p>
-
-        <p><strong>Lưu ý:</strong> Liên kết này sẽ hết hạn sau 1 giờ.</p>
 
         <p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.</p>
       </div>
 
       <div class="footer">
         <p>
-          MyApp Team<br />
-          Email: support@myapp.com
+          Mahika Team<br />
+          Email: phucphse181514@fpt.edu.vn
         </p>
       </div>
     </div>

@@ -4,10 +4,16 @@ from flask_mail import Message
 from werkzeug.security import generate_password_hash
 from app import db, mail
 from app.models import User
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import re
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+def get_vietnam_time():
+    """Get current time in Vietnam timezone (UTC+7)"""
+    vietnam_tz = timezone(timedelta(hours=7))
+    vietnam_time = datetime.now(vietnam_tz)
+    return vietnam_time.strftime('%d/%m/%Y lúc %H:%M:%S (UTC+7)')
 
 def validate_email(email):
     """Validate email format"""
@@ -30,11 +36,15 @@ def send_verification_email(user):
     """Send email verification"""
     token = user.generate_verification_token()
     verification_url = url_for('auth.verify_email', token=token, _external=True)
+    current_time_vn = get_vietnam_time()
     
     msg = Message(
-        subject='Xác thực tài khoản của bạn',
+        subject='Xác thực tài khoản Mahika của bạn',
         recipients=[user.email],
-        html=render_template('emails/verification.html', user=user, verification_url=verification_url),
+        html=render_template('emails/verification.html', 
+                           user=user, 
+                           verification_url=verification_url,
+                           current_time_vn=current_time_vn),
         body=f'Vui lòng truy cập liên kết sau để xác thực tài khoản: {verification_url}'
     )
     mail.send(msg)
@@ -43,11 +53,15 @@ def send_reset_email(user):
     """Send password reset email"""
     token = user.generate_reset_token()
     reset_url = url_for('auth.reset_password', token=token, _external=True)
+    current_time_vn = get_vietnam_time()
     
     msg = Message(
-        subject='Đặt lại mật khẩu',
+        subject='Đặt lại mật khẩu Mahika',
         recipients=[user.email],
-        html=render_template('emails/reset_password.html', user=user, reset_url=reset_url),
+        html=render_template('emails/reset_password.html', 
+                           user=user, 
+                           reset_url=reset_url,
+                           current_time_vn=current_time_vn),
         body=f'Vui lòng truy cập liên kết sau để đặt lại mật khẩu: {reset_url}'
     )
     mail.send(msg)

@@ -5,7 +5,6 @@
 This is a Flask web application with user authentication, email verification, payment integration, and file download functionality.
 
 ## Project Structure
-
 - Use Flask with SQLAlchemy for database operations
 - Implement proper MVC pattern with separate routes for auth, payment, and main functionality
 - Use Bootstrap for responsive UI design
@@ -13,7 +12,6 @@ This is a Flask web application with user authentication, email verification, pa
 - Use Flask-Mail for email verification and password reset
 
 ## Development Guidelines
-
 - Follow Flask best practices and blueprints pattern
 - Use environment variables for sensitive configuration
 - Implement proper error handling and validation
