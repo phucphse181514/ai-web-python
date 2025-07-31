@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Quản lý người dùng - Admin Mahika{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Admin Panel</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-users"></i> Người dùng
+                    </a>
+                    <a href="{{ url_for('admin.payments') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-credit-card"></i> Giao dịch
+                    </a>
+                    <a href="{{ url_for('admin.statistics') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar"></i> Thống kê
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('main.dashboard') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-arrow-left"></i> Về Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Quản lý người dùng</h1>
+                <span class="badge badge-info">Tổng: {{ users.total }} người dùng</span>
+            </div>
+            
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Bộ lọc</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row">
+                        <div class="col-md-3 mb-2">
+                            <label for="search">Tìm kiếm email:</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search or '' }}" placeholder="Nhập email...">
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="verified">Trạng thái xác thực:</label>
+                            <select class="form-control" id="verified" name="verified">
+                                <option value="">Tất cả</option>
+                                <option value="true" {% if filter_verified == 'true' %}selected{% endif %}>Đã xác thực</option>
+                                <option value="false" {% if filter_verified == 'false' %}selected{% endif %}>Chưa xác thực</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label for="paid">Trạng thái thanh toán:</label>
+                            <select class="form-control" id="paid" name="paid">
+                                <option value="">Tất cả</option>
+                                <option value="true" {% if filter_paid == 'true' %}selected{% endif %}>Đã thanh toán</option>
+                                <option value="false" {% if filter_paid == 'false' %}selected{% endif %}>Chưa thanh toán</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Lọc
+                                </button>
+                                <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Users Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Danh sách người dùng</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Ngày đăng ký</th>
+                                    <th>Xác thực</th>
+                                    <th>Thanh toán</th>
+                                    <th>Admin</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users.items %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>
+                                        {{ user.email }}
+                                        {% if user.is_admin %}
+                                        <span class="badge badge-danger ml-1">Admin</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if user.is_verified %}
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check"></i> Đã xác thực
+                                        </span>
+                                        {% if user.verified_at %}
+                                        <br><small class="text-muted">{{ user.verified_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                        {% endif %}
+                                        {% else %}
+                                        <span class="badge badge-warning">
+                                            <i class="fas fa-clock"></i> Chưa xác thực
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.has_paid %}
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check"></i> Đã thanh toán
+                                        </span>
+                                        {% else %}
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times"></i> Chưa thanh toán
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.is_admin %}
+                                        <span class="badge badge-danger">Admin</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">User</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not user.is_admin %}
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ url_for('admin.toggle_user_verified', user_id=user.id) }}" 
+                                               class="btn btn-sm {% if user.is_verified %}btn-warning{% else %}btn-success{% endif %}"
+                                               onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái xác thực?')">
+                                                {% if user.is_verified %}
+                                                <i class="fas fa-times"></i> Bỏ xác thực
+                                                {% else %}
+                                                <i class="fas fa-check"></i> Xác thực
+                                                {% endif %}
+                                            </a>
+                                            <a href="{{ url_for('admin.toggle_user_paid', user_id=user.id) }}" 
+                                               class="btn btn-sm {% if user.has_paid %}btn-danger{% else %}btn-info{% endif %}"
+                                               onclick="return confirm('Bạn có chắc muốn thay đổi trạng thái thanh toán?')">
+                                                {% if user.has_paid %}
+                                                <i class="fas fa-times"></i> Bỏ thanh toán
+                                                {% else %}
+                                                <i class="fas fa-check"></i> Đánh dấu đã trả
+                                                {% endif %}
+                                            </a>
+                                        </div>
+                                        {% else %}
+                                        <span class="text-muted">Tài khoản Admin</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        Không tìm thấy người dùng nào
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                {% if users.pages > 1 %}
+                <div class="card-footer">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0 justify-content-center">
+                            {% if users.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.users', page=users.prev_num, 
+                                   search=search, verified=filter_verified, paid=filter_paid) }}">Trước</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in users.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != users.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.users', page=page_num,
+                                           search=search, verified=filter_verified, paid=filter_paid) }}">{{ page_num }}</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if users.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.users', page=users.next_num,
+                                   search=search, verified=filter_verified, paid=filter_paid) }}">Sau</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Hiển thị {{ users.per_page * (users.page - 1) + 1 }} - 
+                            {{ users.per_page * (users.page - 1) + users.items|length }} 
+                            trong tổng số {{ users.total }} người dùng
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

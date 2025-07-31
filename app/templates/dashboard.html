@@ -208,13 +208,21 @@ block content %}
             >
               <i class="fas fa-history me-2"></i>Lịch sử thanh toán
             </a>
-
             <a
               href="{{ url_for('main.support') }}"
               class="btn btn-outline-info"
             >
               <i class="fas fa-headset me-2"></i>Hỗ trợ
             </a>
+
+            {% if current_user.is_admin %}
+            <a
+              href="{{ url_for('admin.dashboard') }}"
+              class="btn btn-outline-warning"
+            >
+              <i class="fas fa-cog me-2"></i>Admin Panel
+            </a>
+            {% endif %}
 
             <hr />
 

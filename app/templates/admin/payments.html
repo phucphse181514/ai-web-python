@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Giao dịch - Admin Mahika{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Admin Panel</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.users') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users"></i> Người dùng
+                    </a>
+                    <a href="{{ url_for('admin.payments') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-credit-card"></i> Giao dịch
+                    </a>
+                    <a href="{{ url_for('admin.statistics') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar"></i> Thống kê
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('main.dashboard') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-arrow-left"></i> Về Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Quản lý giao dịch</h1>
+                <span class="badge badge-info">Tổng: {{ payments.total }} giao dịch</span>
+            </div>
+            
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Bộ lọc</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row">
+                        <div class="col-md-4 mb-2">
+                            <label for="search">Tìm kiếm:</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search or '' }}" placeholder="Mã giao dịch hoặc email...">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label for="status">Trạng thái:</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="">Tất cả</option>
+                                <option value="PAID" {% if filter_status == 'PAID' %}selected{% endif %}>Thành công</option>
+                                <option value="PENDING" {% if filter_status == 'PENDING' %}selected{% endif %}>Đang xử lý</option>
+                                <option value="CANCELLED" {% if filter_status == 'CANCELLED' %}selected{% endif %}>Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Lọc
+                                </button>
+                                <a href="{{ url_for('admin.payments') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Reset
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Payments Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Danh sách giao dịch</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Mã giao dịch</th>
+                                    <th>Người dùng</th>
+                                    <th>Số tiền</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Ngày hoàn thành</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments.items %}
+                                <tr>
+                                    <td>{{ payment.id }}</td>
+                                    <td>
+                                        <code>{{ payment.payos_order_id }}</code>
+                                        {% if payment.payos_transaction_id %}
+                                        <br><small class="text-muted">TXN: {{ payment.payos_transaction_id }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ payment.user.email }}
+                                        {% if payment.user.is_admin %}
+                                        <span class="badge badge-danger ml-1">Admin</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ "{:,.0f}".format(payment.amount) }} {{ payment.currency }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if payment.status == 'PAID' %}
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check"></i> Thành công
+                                        </span>
+                                        {% elif payment.status == 'PENDING' %}
+                                        <span class="badge badge-warning">
+                                            <i class="fas fa-clock"></i> Đang xử lý
+                                        </span>
+                                        {% elif payment.status == 'CANCELLED' %}
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times"></i> Đã hủy
+                                        </span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">{{ payment.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ payment.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if payment.completed_at %}
+                                        {{ payment.completed_at.strftime('%d/%m/%Y %H:%M') }}
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        Không tìm thấy giao dịch nào
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                {% if payments.pages > 1 %}
+                <div class="card-footer">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination pagination-sm mb-0 justify-content-center">
+                            {% if payments.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.payments', page=payments.prev_num, 
+                                   search=search, status=filter_status) }}">Trước</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in payments.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != payments.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('admin.payments', page=page_num,
+                                           search=search, status=filter_status) }}">{{ page_num }}</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                    {% endif %}
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if payments.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.payments', page=payments.next_num,
+                                   search=search, status=filter_status) }}">Sau</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Hiển thị {{ payments.per_page * (payments.page - 1) + 1 }} - 
+                            {{ payments.per_page * (payments.page - 1) + payments.items|length }} 
+                            trong tổng số {{ payments.total }} giao dịch
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

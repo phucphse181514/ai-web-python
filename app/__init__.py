@@ -25,15 +25,16 @@ def create_app():
     
     # Import models
     from app.models import User, Payment
-    
-    # Register blueprints
+      # Register blueprints
     from app.routes.auth import auth_bp
     from app.routes.main import main_bp
     from app.routes.payment import payment_bp
+    from app.routes.admin import admin_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(payment_bp)
+    app.register_blueprint(admin_bp)
     
     # Create database tables
     with app.app_context():

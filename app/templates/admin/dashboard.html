@@ -1,0 +1,224 @@
+{% extends "base.html" %} {% block title %}Admin Dashboard - Mahika{% endblock
+%} {% block content %}
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Admin Panel</h5>
+        </div>
+        <div class="list-group list-group-flush">
+          <a
+            href="{{ url_for('admin.dashboard') }}"
+            class="list-group-item list-group-item-action active"
+          >
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+          <a
+            href="{{ url_for('admin.users') }}"
+            class="list-group-item list-group-item-action"
+          >
+            <i class="fas fa-users"></i> Người dùng
+          </a>
+          <a
+            href="{{ url_for('admin.payments') }}"
+            class="list-group-item list-group-item-action"
+          >
+            <i class="fas fa-credit-card"></i> Giao dịch
+          </a>
+          <a
+            href="{{ url_for('admin.statistics') }}"
+            class="list-group-item list-group-item-action"
+          >
+            <i class="fas fa-chart-bar"></i> Thống kê
+          </a>
+          <div class="dropdown-divider"></div>
+          <a
+            href="{{ url_for('main.dashboard') }}"
+            class="list-group-item list-group-item-action"
+          >
+            <i class="fas fa-arrow-left"></i> Về Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9 col-lg-10">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Dashboard Admin</h1>
+        <span class="badge badge-primary"
+          >Xin chào, {{ current_user.email }}</span
+        >
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+          <div class="card bg-primary text-white">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-users fa-2x"></i>
+                <div class="ml-3">
+                  <h4 class="mb-0">{{ stats.total_users }}</h4>
+                  <small>Tổng người dùng</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <div class="card bg-success text-white">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle fa-2x"></i>
+                <div class="ml-3">
+                  <h4 class="mb-0">{{ stats.verified_users }}</h4>
+                  <small>Đã xác thực</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <div class="card bg-info text-white">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-credit-card fa-2x"></i>
+                <div class="ml-3">
+                  <h4 class="mb-0">{{ stats.paid_users }}</h4>
+                  <small>Đã thanh toán</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <div class="card bg-warning text-white">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-money-bill fa-2x"></i>
+                <div class="ml-3">
+                  <h4 class="mb-0">
+                    {{ "{:,.0f}".format(stats.total_revenue) }} VND
+                  </h4>
+                  <small>Tổng doanh thu</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today Stats -->
+      <div class="row mb-4">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Thống kê hôm nay</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4 text-center">
+                  <h3 class="text-primary">{{ stats.today_users }}</h3>
+                  <p class="text-muted">Người dùng mới</p>
+                </div>
+                <div class="col-md-4 text-center">
+                  <h3 class="text-success">{{ stats.today_payments }}</h3>
+                  <p class="text-muted">Giao dịch thành công</p>
+                </div>
+                <div class="col-md-4 text-center">
+                  <h3 class="text-warning">
+                    {{ "{:,.0f}".format(stats.today_revenue) }} VND
+                  </h3>
+                  <p class="text-muted">Doanh thu hôm nay</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 30 Days Stats -->
+      <div class="row mb-4">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Thống kê 30 ngày gần nhất</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4 text-center">
+                  <h3 class="text-primary">{{ stats.recent_users }}</h3>
+                  <p class="text-muted">Người dùng mới</p>
+                </div>
+                <div class="col-md-4 text-center">
+                  <h3 class="text-success">{{ stats.recent_payments }}</h3>
+                  <p class="text-muted">Giao dịch thành công</p>
+                </div>
+                <div class="col-md-4 text-center">
+                  <h3 class="text-warning">
+                    {{ "{:,.0f}".format(stats.recent_revenue) }} VND
+                  </h3>
+                  <p class="text-muted">Doanh thu 30 ngày</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Thao tác nhanh</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3 mb-2">
+                  <a
+                    href="{{ url_for('admin.users') }}"
+                    class="btn btn-primary btn-block"
+                  >
+                    <i class="fas fa-users"></i> Quản lý người dùng
+                  </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <a
+                    href="{{ url_for('admin.payments') }}"
+                    class="btn btn-success btn-block"
+                  >
+                    <i class="fas fa-credit-card"></i> Xem giao dịch
+                  </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <a
+                    href="{{ url_for('admin.statistics') }}"
+                    class="btn btn-info btn-block"
+                  >
+                    <i class="fas fa-chart-bar"></i> Báo cáo chi tiết
+                  </a>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <a
+                    href="{{ url_for('main.dashboard') }}"
+                    class="btn btn-secondary btn-block"
+                  >
+                    <i class="fas fa-home"></i> Về trang chính
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

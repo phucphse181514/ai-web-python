@@ -1,0 +1,229 @@
+{% extends "base.html" %} {% block title %}Thống kê - Admin Mahika{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Admin Panel</h5>
+        </div>
+        <div class="list-group list-group-flush">
+          <a
+            href="{{ url_for('admin.dashboard') }}"
+            class="list-group-item list-group-item-action"
+          >
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+          <a
+            href="{{ url_for('admin.users') }}"
+            class="list-group-item list-group-item-action"
+          >
+            <i class="fas fa-users"></i> Người dùng
+          </a>
+          <a
+            href="{{ url_for('admin.payments') }}"
+            class="list-group-item list-group-item-action"
+          >
+            <i class="fas fa-credit-card"></i> Giao dịch
+          </a>
+          <a
+            href="{{ url_for('admin.statistics') }}"
+            class="list-group-item list-group-item-action active"
+          >
+            <i class="fas fa-chart-bar"></i> Thống kê
+          </a>
+          <div class="dropdown-divider"></div>
+          <a
+            href="{{ url_for('main.dashboard') }}"
+            class="list-group-item list-group-item-action"
+          >
+            <i class="fas fa-arrow-left"></i> Về Dashboard
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9 col-lg-10">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Thống kê chi tiết</h1>
+      </div>
+
+      <!-- Monthly Statistics -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Thống kê theo tháng (12 tháng gần nhất)</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="thead-light">
+                <tr>
+                  <th>Tháng</th>
+                  <th>Người dùng mới</th>
+                  <th>Số lượt bán</th>
+                  <th>Doanh thu (VND)</th>
+                  <th>Doanh thu trung bình/Giao dịch</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for stat in monthly_stats %}
+                <tr>
+                  <td><strong>{{ stat.month }}</strong></td>
+                  <td>
+                    <span class="badge badge-primary"
+                      >{{ stat.new_users }}</span
+                    >
+                  </td>
+                  <td>
+                    <span class="badge badge-success"
+                      >{{ stat.payments_count }}</span
+                    >
+                  </td>
+                  <td>
+                    <strong class="text-warning"
+                      >{{ "{:,.0f}".format(stat.revenue) }}</strong
+                    >
+                  </td>
+                  <td>
+                    {% if stat.payments_count > 0 %}
+                    <span class="text-info"
+                      >{{ "{:,.0f}".format(stat.revenue / stat.payments_count)
+                      }}</span
+                    >
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">
+                    Không có dữ liệu thống kê
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+              {% if monthly_stats %}
+              <tfoot class="thead-light">
+                <tr>
+                  <th>Tổng cộng</th>
+                  <th>
+                    <span class="badge badge-primary">
+                      {{ monthly_stats | sum(attribute='new_users') }}
+                    </span>
+                  </th>
+                  <th>
+                    <span class="badge badge-success">
+                      {{ monthly_stats | sum(attribute='payments_count') }}
+                    </span>
+                  </th>
+                  <th>
+                    <strong class="text-warning">
+                      {{ "{:,.0f}".format(monthly_stats |
+                      sum(attribute='revenue')) }}
+                    </strong>
+                  </th>
+                  <th>
+                    {% set total_payments = monthly_stats |
+                    sum(attribute='payments_count') %} {% set total_revenue =
+                    monthly_stats | sum(attribute='revenue') %} {% if
+                    total_payments > 0 %}
+                    <span class="text-info"
+                      >{{ "{:,.0f}".format(total_revenue / total_payments)
+                      }}</span
+                    >
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </th>
+                </tr>
+              </tfoot>
+              {% endif %}
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts would go here if we add Chart.js -->
+      <div class="card mt-4">
+        <div class="card-header">
+          <h5 class="mb-0">Biểu đồ doanh thu</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="revenueChart" width="400" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Biểu đồ doanh thu
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  const monthlyData = {{ monthly_stats | tojson }};
+
+  const labels = monthlyData.map(item => item.month);
+  const revenueData = monthlyData.map(item => item.revenue);
+  const paymentsData = monthlyData.map(item => item.payments_count);
+
+  const revenueChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+          labels: labels,
+          datasets: [{
+              label: 'Doanh thu (VND)',
+              data: revenueData,
+              borderColor: 'rgb(255, 193, 7)',
+              backgroundColor: 'rgba(255, 193, 7, 0.1)',
+              yAxisID: 'y'
+          }, {
+              label: 'Số lượt bán',
+              data: paymentsData,
+              borderColor: 'rgb(40, 167, 69)',
+              backgroundColor: 'rgba(40, 167, 69, 0.1)',
+              yAxisID: 'y1'
+          }]
+      },
+      options: {
+          responsive: true,
+          interaction: {
+              mode: 'index',
+              intersect: false,
+          },
+          scales: {
+              x: {
+                  display: true,
+                  title: {
+                      display: true,
+                      text: 'Tháng'
+                  }
+              },
+              y: {
+                  type: 'linear',
+                  display: true,
+                  position: 'left',
+                  title: {
+                      display: true,
+                      text: 'Doanh thu (VND)'
+                  }
+              },
+              y1: {
+                  type: 'linear',
+                  display: true,
+                  position: 'right',
+                  title: {
+                      display: true,
+                      text: 'Số lượt bán'
+                  },
+                  grid: {
+                      drawOnChartArea: false,
+                  },
+              }
+          }
+      }
+  });
+</script>
+{% endblock %}
